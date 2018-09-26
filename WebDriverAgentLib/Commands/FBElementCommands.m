@@ -39,6 +39,7 @@
 #import "XCUIElement.h"
 #import "XCUIElementQuery.h"
 #import "FBXCodeCompatibility.h"
+const double DOUBLE_ZERO_COMPARE = 0.001;
 
 @interface FBElementCommands ()
 @end
@@ -322,13 +323,25 @@
 
 + (id<FBResponsePayload>)handleDragCoordinate:(FBRouteRequest *)request
 {
-  FBSession *session = request.session;
+//  FBSession *session = request.session;
+//  CGPoint startPoint = CGPointMake((CGFloat)[request.arguments[@"fromX"] doubleValue], (CGFloat)[request.arguments[@"fromY"] doubleValue]);
+//  CGPoint endPoint = CGPointMake((CGFloat)[request.arguments[@"toX"] doubleValue], (CGFloat)[request.arguments[@"toY"] doubleValue]);
+//  NSTimeInterval duration = [request.arguments[@"duration"] doubleValue];
+//  XCUICoordinate *endCoordinate = [self.class gestureCoordinateWithCoordinate:endPoint application:session.application shouldApplyOrientationWorkaround:isSDKVersionLessThan(@"11.0")];
+//  XCUICoordinate *startCoordinate = [self.class gestureCoordinateWithCoordinate:startPoint application:session.application shouldApplyOrientationWorkaround:isSDKVersionLessThan(@"11.0")];
+//  [startCoordinate pressForDuration:duration thenDragToCoordinate:endCoordinate];
+//  return FBResponseWithOK();
+  NSTimeInterval duration = [request.arguments[@"duration"] doubleValue];
+  if ((duration - 0) < DOUBLE_ZERO_COMPARE ) {
+    duration = 1;
+  }
   CGPoint startPoint = CGPointMake((CGFloat)[request.arguments[@"fromX"] doubleValue], (CGFloat)[request.arguments[@"fromY"] doubleValue]);
   CGPoint endPoint = CGPointMake((CGFloat)[request.arguments[@"toX"] doubleValue], (CGFloat)[request.arguments[@"toY"] doubleValue]);
-  NSTimeInterval duration = [request.arguments[@"duration"] doubleValue];
-  XCUICoordinate *endCoordinate = [self.class gestureCoordinateWithCoordinate:endPoint application:session.application shouldApplyOrientationWorkaround:isSDKVersionLessThan(@"11.0")];
-  XCUICoordinate *startCoordinate = [self.class gestureCoordinateWithCoordinate:startPoint application:session.application shouldApplyOrientationWorkaround:isSDKVersionLessThan(@"11.0")];
-  [startCoordinate pressForDuration:duration thenDragToCoordinate:endCoordinate];
+  
+  
+  [[XCEventGenerator sharedGenerator] pressAtPoint:startPoint forDuration:0 liftAtPoint:endPoint velocity: (1000/duration)  orientation:UIInterfaceOrientationUnknown name:@"test" handler:^(XCSynthesizedEventRecord *record, NSError *error) {
+    [FBLogger verboseLog:error.description];
+  }];
   return FBResponseWithOK();
 }
 
@@ -371,18 +384,21 @@
 
 + (id<FBResponsePayload>)handleTap:(FBRouteRequest *)request
 {
-  FBElementCache *elementCache = request.session.elementCache;
+  //FBElementCache *elementCache = request.session.elementCache;
   CGPoint tapPoint = CGPointMake((CGFloat)[request.arguments[@"x"] doubleValue], (CGFloat)[request.arguments[@"y"] doubleValue]);
-  XCUIElement *element = [elementCache elementForUUID:request.parameters[@"uuid"]];
-  if (nil == element) {
-    XCUICoordinate *tapCoordinate = [self.class gestureCoordinateWithCoordinate:tapPoint application:request.session.application shouldApplyOrientationWorkaround:isSDKVersionLessThan(@"11.0")];
-    [tapCoordinate tap];
-  } else {
-    NSError *error;
-    if (![element fb_tapCoordinate:tapPoint error:&error]) {
-      return FBResponseWithError(error);
-    }
-  }
+//  XCUIElement *element = [elementCache elementForUUID:request.parameters[@"uuid"]];
+//  if (nil == element) {
+//    XCUICoordinate *tapCoordinate = [self.class gestureCoordinateWithCoordinate:tapPoint application:request.session.application shouldApplyOrientationWorkaround:isSDKVersionLessThan(@"11.0")];
+//    [tapCoordinate tap];
+//  } else {
+//    NSError *error;
+//    if (![element fb_tapCoordinate:tapPoint error:&error]) {
+//      return FBResponseWithError(error);
+//    }
+//  }
+  [[XCEventGenerator sharedGenerator]pressAtPoint:tapPoint forDuration:0.1 orientation:UIInterfaceOrientationUnknown handler:^(XCSynthesizedEventRecord *record, NSError *error) {
+    [FBLogger verboseLog:error.description];
+  }];
   return FBResponseWithOK();
 }
 
