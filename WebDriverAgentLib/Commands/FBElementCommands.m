@@ -270,7 +270,7 @@ const double DOUBLE_ZERO_COMPARE = 0.001;
   if (![element fb_forceTouchCoordinate:forceTouchPoint pressure:pressure duration:duration error:&error]) {
     return FBResponseWithError(error);
   }
-  return FBResponseWithOK();
+  return FBResponseWithOK(); 
 }
 
 + (id<FBResponsePayload>)handleScroll:(FBRouteRequest *)request
@@ -331,15 +331,15 @@ const double DOUBLE_ZERO_COMPARE = 0.001;
 //  XCUICoordinate *startCoordinate = [self.class gestureCoordinateWithCoordinate:startPoint application:session.application shouldApplyOrientationWorkaround:isSDKVersionLessThan(@"11.0")];
 //  [startCoordinate pressForDuration:duration thenDragToCoordinate:endCoordinate];
 //  return FBResponseWithOK();
+  
   NSTimeInterval duration = [request.arguments[@"duration"] doubleValue];
-  if ((duration - 0) < DOUBLE_ZERO_COMPARE ) {
-    duration = 1;
+  if (duration < 0 ) {
+    duration = 0.1;
   }
+//  NSTimeInterval velocity = [request.arguments[@"velocity"] doubleValue] > 0 ? [request.arguments[@"velocity"] doubleValue]: 100;
   CGPoint startPoint = CGPointMake((CGFloat)[request.arguments[@"fromX"] doubleValue], (CGFloat)[request.arguments[@"fromY"] doubleValue]);
   CGPoint endPoint = CGPointMake((CGFloat)[request.arguments[@"toX"] doubleValue], (CGFloat)[request.arguments[@"toY"] doubleValue]);
-  
-  
-  [[XCEventGenerator sharedGenerator] pressAtPoint:startPoint forDuration:0 liftAtPoint:endPoint velocity: (1000/duration)  orientation:UIInterfaceOrientationUnknown name:@"test" handler:^(XCSynthesizedEventRecord *record, NSError *error) {
+  [[XCEventGenerator sharedGenerator] pressAtPoint:startPoint forDuration:duration liftAtPoint:endPoint velocity:200  orientation:UIInterfaceOrientationUnknown name:@"test" handler:^(XCSynthesizedEventRecord *record, NSError *error) {
     [FBLogger verboseLog:error.description];
   }];
   return FBResponseWithOK();
@@ -347,17 +347,30 @@ const double DOUBLE_ZERO_COMPARE = 0.001;
 
 + (id<FBResponsePayload>)handleDrag:(FBRouteRequest *)request
 {
-  FBSession *session = request.session;
-  FBElementCache *elementCache = session.elementCache;
-  XCUIElement *element = [elementCache elementForUUID:request.parameters[@"uuid"]];
-  CGPoint startPoint = CGPointMake((CGFloat)(element.frame.origin.x + [request.arguments[@"fromX"] doubleValue]), (CGFloat)(element.frame.origin.y + [request.arguments[@"fromY"] doubleValue]));
-  CGPoint endPoint = CGPointMake((CGFloat)(element.frame.origin.x + [request.arguments[@"toX"] doubleValue]), (CGFloat)(element.frame.origin.y + [request.arguments[@"toY"] doubleValue]));
+  //  FBSession *session = request.session;
+  //  FBElementCache *elementCache = session.elementCache;
+  //  XCUIElement *element = [elementCache elementForUUID:request.parameters[@"uuid"]];
+  //  CGPoint startPoint = CGPointMake((CGFloat)(element.frame.origin.x + [request.arguments[@"fromX"] doubleValue]), (CGFloat)(element.frame.origin.y + [request.arguments[@"fromY"] doubleValue]));
+  //  CGPoint endPoint = CGPointMake((CGFloat)(element.frame.origin.x + [request.arguments[@"toX"] doubleValue]), (CGFloat)(element.frame.origin.y + [request.arguments[@"toY"] doubleValue]));
+  //  NSTimeInterval duration = [request.arguments[@"duration"] doubleValue];
+  //  BOOL shouldApplyOrientationWorkaround = isSDKVersionGreaterThanOrEqualTo(@"10.0") && isSDKVersionLessThan(@"11.0");
+  //  XCUICoordinate *endCoordinate = [self.class gestureCoordinateWithCoordinate:endPoint application:session.application shouldApplyOrientationWorkaround:shouldApplyOrientationWorkaround];
+  //  XCUICoordinate *startCoordinate = [self.class gestureCoordinateWithCoordinate:startPoint application:session.application shouldApplyOrientationWorkaround:shouldApplyOrientationWorkaround];
+  //  [startCoordinate pressForDuration:duration thenDragToCoordinate:endCoordinate];
+  //return FBResponseWithOK();
+  
   NSTimeInterval duration = [request.arguments[@"duration"] doubleValue];
-  BOOL shouldApplyOrientationWorkaround = isSDKVersionGreaterThanOrEqualTo(@"10.0") && isSDKVersionLessThan(@"11.0");
-  XCUICoordinate *endCoordinate = [self.class gestureCoordinateWithCoordinate:endPoint application:session.application shouldApplyOrientationWorkaround:shouldApplyOrientationWorkaround];
-  XCUICoordinate *startCoordinate = [self.class gestureCoordinateWithCoordinate:startPoint application:session.application shouldApplyOrientationWorkaround:shouldApplyOrientationWorkaround];
-  [startCoordinate pressForDuration:duration thenDragToCoordinate:endCoordinate];
-  return FBResponseWithOK();
+  if ((duration - 0) < DOUBLE_ZERO_COMPARE ) {
+    duration = 1;
+  }
+  CGPoint startPoint = CGPointMake((CGFloat)[request.arguments[@"fromX"] doubleValue], (CGFloat)[request.arguments[@"fromY"] doubleValue]);
+  CGPoint endPoint = CGPointMake((CGFloat)[request.arguments[@"toX"] doubleValue], (CGFloat)[request.arguments[@"toY"] doubleValue]);
+  [[XCEventGenerator sharedGenerator] pressAtPoint:startPoint forDuration:duration liftAtPoint:endPoint velocity:200 orientation:UIInterfaceOrientationUnknown name:@"test" handler:^(XCSynthesizedEventRecord *record, NSError *error) {
+    [FBLogger verboseLog:error.description];
+  }];
+//  return FBResponseWithOK();
+  return FBResponseWithErrorFormat(@"%lf",duration);
+
 }
 
 + (id<FBResponsePayload>)handleSwipe:(FBRouteRequest *)request
